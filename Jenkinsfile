@@ -1,7 +1,7 @@
 node {
     
     stage 'Checkout'
-    git "https://github.com/kohsuke/petclinic.git"
+    git "https://github.com/gopinathkathir/petclinic.git"
 
     stage 'Build application war file'
     // Build petclinic in a Maven3+JDK8 Docker container
@@ -10,16 +10,16 @@ node {
     }
 
     stage 'Build application Docker image'
-    def appImg = docker.build("nicolas-deloof/petclinic")
+    def appImg = docker.build("mysample/petclinic")
 
-    stage 'Push to GCR'
-    docker.withRegistry('https://gcr.io', 'gcr:nicolas-deloof') {
+    stage 'Push to Local Registory'
+    docker.withRegistry('http://172.16.204.230:5000') {
         appImg.push();
     }
 
     stage 'Run app on Kubernetes'
-    withKubernetes( serverUrl: 'https://146.148.36.159', credentialsId: 'kubeadmin' ) {
-          sh 'kubectl run petclinic --image=gcr.io/nicolas-deloof/petclinic --port=8080'
+    withKubernetes( serverUrl: 'http://172.16.204.230:8080') {
+          sh 'kubectl run petclinic --image=172.16.204.230:8080/mysample/petclinic --port=8080'
     }
 
     // ... Do some tests on deployed application web UI
